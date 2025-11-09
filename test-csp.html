@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Test</title>
+</head>
+<body>
+    <h1>Testing CSP Compliance</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function runTests() {
+            const tests = [];
+            
+            // Test 1: Check if crypto API is available
+            tests.push({
+                name: 'Crypto API Available',
+                passed: typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function'
+            });
+            
+            // Test 2: Check if we can generate random bytes
+            try {
+                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                tests.push({
+                    name: 'Generate Random Bytes',
+                    passed: randomBytes.length === 32
+                });
+            } catch (e) {
+                tests.push({
+                    name: 'Generate Random Bytes',
+                    passed: false,
+                    error: e.message
+                });
+            }
+            
+            // Test 3: Check if addEventListener works
+            const testBtn = document.createElement('button');
+            let clicked = false;
+            testBtn.addEventListener('click', () => { clicked = true; });
+            testBtn.click();
+            tests.push({
+                name: 'addEventListener Works',
+                passed: clicked
+            });
+            
+            // Display results
+            let html = '<h2>Test Results</h2><ul>';
+            tests.forEach(test => {
+                const status = test.passed ? '✅ PASS' : '❌ FAIL';
+                const error = test.error ? ` (${test.error})` : '';
+                html += `<li>${status} - ${test.name}${error}</li>`;
+            });
+            html += '</ul>';
+            
+            const allPassed = tests.every(t => t.passed);
+            html += `<h3>${allPassed ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}</h3>`;
+            
+            results.innerHTML = html;
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

@@ -26,7 +26,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
     background-color: var(--card-bg);
     padding: 30px;
@@ -43,27 +43,22 @@ header {
 
 h1 {
     color: var(--primary-color);
-    font-size: 2.5em;
+    font-size: 2.2em;
     margin-bottom: 10px;
 }
 
 h2 {
     color: var(--muted-color);
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: normal;
 }
 
 h3 {
     color: var(--primary-color);
     margin-bottom: 20px;
-    font-size: 1.5em;
+    font-size: 1.4em;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 10px;
-}
-
-h4 {
-    color: var(--secondary-color);
-    margin: 15px 0 10px 0;
 }
 
 .warning-banner {
@@ -73,11 +68,11 @@ h4 {
     border-radius: 5px;
     margin-top: 20px;
     font-weight: bold;
-    font-size: 1.1em;
+    text-align: center;
 }
 
 section {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     padding: 20px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -95,7 +90,7 @@ label {
     color: var(--primary-color);
 }
 
-select, input[type="text"], input[type="password"] {
+select {
     width: 100%;
     padding: 12px;
     border: 2px solid var(--border-color);
@@ -104,7 +99,7 @@ select, input[type="text"], input[type="password"] {
     transition: border-color 0.3s;
 }
 
-select:focus, input:focus {
+select:focus {
     outline: none;
     border-color: var(--secondary-color);
 }
@@ -158,72 +153,22 @@ button {
     background-color: #c0392b;
 }
 
+.copy-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    font-size: 0.9em;
+    padding: 8px 16px;
+}
+
+.copy-btn:hover {
+    background-color: #2980b9;
+}
+
 .generate-section {
     text-align: center;
 }
 
-.entropy-section {
-    background-color: #e8f4f8;
-}
-
-.entropy-info {
-    margin-bottom: 20px;
-}
-
-.entropy-bar {
-    width: 100%;
-    height: 30px;
-    background-color: #ddd;
-    border-radius: 15px;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.entropy-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--warning-color), var(--success-color));
-    width: 0%;
-    transition: width 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-
-.entropy-canvas {
-    width: 100%;
-    height: 150px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 8px;
-    cursor: crosshair;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    position: relative;
-    overflow: hidden;
-}
-
-.entropy-methods {
-    margin-top: 20px;
-}
-
-.entropy-source-info {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: white;
-    border-radius: 5px;
-    border-left: 4px solid var(--secondary-color);
-}
-
-.entropy-source-info ul {
-    margin-left: 20px;
-    margin-top: 10px;
-}
-
-.result-section, .derivation-section {
+.result-section {
     background-color: #f0f8f0;
 }
 
@@ -248,59 +193,6 @@ button {
     font-weight: bold;
     color: var(--primary-color);
     line-height: 1.8;
-}
-
-.derivation-info {
-    background-color: #fff3cd;
-    border: 2px solid var(--warning-color);
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.path-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.path-buttons button {
-    flex: 1 1 calc(50% - 10px);
-    min-width: 200px;
-}
-
-.derived-results {
-    margin-top: 20px;
-}
-
-.derived-item {
-    background-color: white;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    border-left: 4px solid var(--success-color);
-}
-
-.wallet-guide {
-    background-color: #fff9e6;
-}
-
-.wallet-card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border-color);
-}
-
-.wallet-card ol {
-    margin-left: 20px;
-    margin-top: 10px;
-}
-
-.wallet-card li {
-    margin-bottom: 8px;
 }
 
 .test-vectors {
@@ -368,11 +260,6 @@ footer p {
     margin-bottom: 8px;
 }
 
-#entropyStatus {
-    font-weight: bold;
-    color: var(--success-color);
-}
-
 @media (max-width: 768px) {
     .container {
         padding: 15px;
@@ -380,10 +267,6 @@ footer p {
     
     h1 {
         font-size: 1.8em;
-    }
-    
-    .path-buttons button {
-        flex: 1 1 100%;
     }
     
     button {
@@ -397,7 +280,7 @@ footer p {
         background-color: white;
     }
     
-    .generate-section, .entropy-section, button {
+    .generate-section, button {
         display: none;
     }
 }

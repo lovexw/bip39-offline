@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
-    <title>离线 BIP39 助记词生成器 | Offline BIP39 Mnemonic Generator</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>离线助记词生成器 | Offline Mnemonic Generator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🔐 离线 BIP39 助记词生成器</h1>
-            <h2>Offline BIP39 Mnemonic Generator</h2>
-            <div class="warning-banner">
-                ⚠️ 警告 / WARNING: 请在完全离线的环境中使用此工具 / Use this tool in a completely offline environment
+            <h1>🔐 离线助记词生成器</h1>
+            <h2>Offline Mnemonic Generator</h2>
+            <div class="warning-banner" id="onlineWarning" style="display: none;">
+                ⚠️ 警告：您似乎在线。请在完全离线的环境中使用！<br>
+                ⚠️ WARNING: You appear to be online. Use in completely offline environment!
             </div>
         </header>
 
@@ -25,84 +26,21 @@
                 <div class="form-group">
                     <label>助记词长度 / Mnemonic Length:</label>
                     <select id="wordCount">
-                        <option value="12">12 词 / Words (128-bit entropy)</option>
-                        <option value="24">24 词 / Words (256-bit entropy)</option>
+                        <option value="12">12 词 / Words (128-bit)</option>
+                        <option value="24">24 词 / Words (256-bit)</option>
                     </select>
-                </div>
-
-                <div class="form-group">
-                    <label>语言 / Language:</label>
-                    <select id="language">
-                        <option value="english">English</option>
-                        <option value="chinese_simplified">简体中文</option>
-                        <option value="chinese_traditional">繁體中文</option>
-                        <option value="japanese">日本語</option>
-                        <option value="korean">한국어</option>
-                        <option value="french">Français</option>
-                        <option value="italian">Italiano</option>
-                        <option value="spanish">Español</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>可选密码短语 / Optional Passphrase (BIP39 Extension):</label>
-                    <input type="password" id="passphrase" placeholder="留空表示无密码 / Leave empty for no passphrase">
-                    <small>密码短语作为第25个词，增强安全性 / Passphrase acts as a 25th word for enhanced security</small>
-                </div>
-            </section>
-
-            <!-- 熵源收集 -->
-            <section class="entropy-section">
-                <h3>熵源收集 / Entropy Collection</h3>
-                
-                <div class="entropy-info">
-                    <p>当前熵池状态 / Current Entropy Pool: <span id="entropyStatus">0 bits</span></p>
-                    <div class="entropy-bar">
-                        <div id="entropyProgress" class="entropy-fill"></div>
-                    </div>
-                </div>
-
-                <div class="entropy-methods">
-                    <div class="form-group">
-                        <label>鼠标移动收集熵 / Mouse Movement Entropy:</label>
-                        <div id="mouseEntropyCanvas" class="entropy-canvas">
-                            在此区域移动鼠标以收集熵 / Move mouse here to collect entropy
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>骰子投掷 / Dice Rolls (1-6):</label>
-                        <input type="text" id="diceRolls" placeholder="例如 / e.g.: 4,2,6,1,5,3...">
-                        <button onclick="addDiceEntropy()">添加骰子熵 / Add Dice Entropy</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label>自定义熵 (十六进制) / Custom Entropy (Hex):</label>
-                        <input type="text" id="customEntropy" placeholder="例如 / e.g.: a1b2c3d4...">
-                        <button onclick="addCustomEntropy()">添加自定义熵 / Add Custom Entropy</button>
-                    </div>
-                </div>
-
-                <div class="entropy-source-info">
-                    <p><strong>熵源混合方案 / Entropy Mixing Scheme:</strong></p>
-                    <ul>
-                        <li>系统 CSPRNG (crypto.getRandomValues) / System CSPRNG</li>
-                        <li>用户输入熵（鼠标、骰子、自定义） / User Input Entropy</li>
-                        <li>时间戳纳秒级变化 / High-resolution Timestamp</li>
-                        <li>混合方法：SHA-256(CSPRNG || UserEntropy || Timestamp) / Mixing: SHA-256</li>
-                    </ul>
                 </div>
             </section>
 
             <!-- 生成按钮 -->
             <section class="generate-section">
-                <button id="generateBtn" class="primary-btn" onclick="generateMnemonic()">
+                <button id="generateBtn" class="primary-btn">
                     🎲 生成新助记词 / Generate New Mnemonic
                 </button>
-                <button class="secondary-btn" onclick="loadTestMnemonic()">
+                <button id="loadTestBtn" class="secondary-btn">
                     📋 加载测试助记词 / Load Test Mnemonic
                 </button>
-                <button class="danger-btn" onclick="clearAll()">
+                <button id="clearBtn" class="danger-btn">
                     🗑️ 清除所有数据 / Clear All Data
                 </button>
             </section>
@@ -111,125 +49,82 @@
             <section id="resultSection" class="result-section" style="display: none;">
                 <h3>生成结果 / Generated Results</h3>
                 
+                <div id="testWarning" class="warning-banner" style="display: none;">
+                    ⚠️ 测试助记词 - 仅用于学习，切勿用于真实资产！<br>
+                    ⚠️ Test Mnemonic - For learning only, never use for real assets!
+                </div>
+                
                 <div class="result-group">
                     <label>BIP39 助记词 / BIP39 Mnemonic:</label>
                     <div class="result-box mnemonic-box" id="mnemonicResult"></div>
-                    <button onclick="copyToClipboard('mnemonicResult')">复制 / Copy</button>
+                    <button id="copyMnemonicBtn" class="copy-btn">📋 复制 / Copy</button>
                 </div>
 
                 <div class="result-group">
                     <label>BIP39 种子 (Hex) / BIP39 Seed (Hex):</label>
                     <div class="result-box" id="seedResult"></div>
-                    <button onclick="copyToClipboard('seedResult')">复制 / Copy</button>
+                    <button id="copySeedBtn" class="copy-btn">📋 复制 / Copy</button>
                     <small>使用 PBKDF2-HMAC-SHA512, 2048 次迭代 / Using PBKDF2-HMAC-SHA512, 2048 iterations</small>
                 </div>
-
-                <div class="result-group">
-                    <label>根密钥 (Master Key) / Root Key:</label>
-                    <div class="result-box" id="masterKeyResult"></div>
-                    <small>BIP32 根扩展密钥 / BIP32 Root Extended Key</small>
-                </div>
-            </section>
-
-            <!-- 派生路径 -->
-            <section id="derivationSection" class="derivation-section" style="display: none;">
-                <h3>派生路径 / Derivation Paths</h3>
-                
-                <div class="derivation-info">
-                    <p><strong>⚠️ 重要 / IMPORTANT:</strong> 导入钱包时必须使用正确的派生路径 / Must use correct derivation path when importing to wallets</p>
-                </div>
-
-                <div class="path-presets">
-                    <h4>常用派生路径 / Common Derivation Paths:</h4>
-                    <div class="path-buttons">
-                        <button onclick="derivePath('m/44\'/60\'/0\'/0/0')">Ethereum (m/44'/60'/0'/0/0)</button>
-                        <button onclick="derivePath('m/44\'/0\'/0\'/0/0')">Bitcoin Legacy (m/44'/0'/0'/0/0)</button>
-                        <button onclick="derivePath('m/84\'/0\'/0\'/0/0')">Bitcoin Native SegWit (m/84'/0'/0'/0/0)</button>
-                        <button onclick="derivePath('m/49\'/0\'/0\'/0/0')">Bitcoin SegWit (m/49'/0'/0'/0/0)</button>
-                        <button onclick="derivePath('m/44\'/60\'/0\'/0')">imToken ETH (m/44'/60'/0'/0)</button>
-                        <button onclick="derivePath('m/44\'/195\'/0\'/0/0')">TRON (m/44'/195'/0'/0/0)</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>自定义派生路径 / Custom Derivation Path:</label>
-                    <input type="text" id="customPath" placeholder="例如 / e.g.: m/44'/60'/0'/0/0">
-                    <button onclick="deriveCustomPath()">派生 / Derive</button>
-                </div>
-
-                <div id="derivedResults" class="derived-results"></div>
-            </section>
-
-            <!-- 钱包导入指南 -->
-            <section class="wallet-guide">
-                <h3>钱包导入指南 / Wallet Import Guide</h3>
-                
-                <div class="wallet-card">
-                    <h4>imToken</h4>
-                    <ol>
-                        <li>打开 imToken，选择"导入钱包" / Open imToken, select "Import Wallet"</li>
-                        <li>选择"助记词" / Select "Mnemonic"</li>
-                        <li>输入 BIP39 助记词 / Enter BIP39 mnemonic</li>
-                        <li>确认派生路径：ETH 使用 m/44'/60'/0'/0 / Confirm derivation path</li>
-                    </ol>
-                </div>
-
-                <div class="wallet-card">
-                    <h4>MetaMask</h4>
-                    <ol>
-                        <li>打开 MetaMask，选择"导入钱包" / Open MetaMask, select "Import Wallet"</li>
-                        <li>输入 12 或 24 词助记词 / Enter 12 or 24 word mnemonic</li>
-                        <li>默认使用 m/44'/60'/0'/0/0 路径 / Default uses m/44'/60'/0'/0/0 path</li>
-                    </ol>
-                </div>
-
-                <div class="wallet-card">
-                    <h4>硬件钱包 / Hardware Wallets (Ledger/Trezor)</h4>
-                    <ol>
-                        <li>按照硬件钱包恢复流程 / Follow hardware wallet recovery process</li>
-                        <li>依次输入助记词 / Enter mnemonic words in order</li>
-                        <li>确认派生路径设置 / Confirm derivation path settings</li>
-                    </ol>
-                </div>
-            </section>
-
-            <!-- 测试向量 -->
-            <section class="test-vectors">
-                <h3>测试向量 / Test Vectors</h3>
-                <details>
-                    <summary>查看 BIP39 已知测试向量 / View BIP39 Known Test Vectors</summary>
-                    <div class="test-vector-content">
-                        <pre id="testVectors">加载中... / Loading...</pre>
-                    </div>
-                </details>
             </section>
 
             <!-- 安全提示 -->
             <section class="security-tips">
                 <h3>🛡️ 安全提示 / Security Tips</h3>
                 <ul>
-                    <li>✅ 请在完全离线的环境中生成助记词 / Generate mnemonic in completely offline environment</li>
-                    <li>✅ 建议使用 air-gapped 计算机或 USB 启动的 Linux / Use air-gapped computer or USB-booted Linux</li>
-                    <li>✅ 妥善保管助记词，抄写在纸上并存放在安全的地方 / Store mnemonic safely, write on paper and keep secure</li>
-                    <li>✅ 永远不要在联网设备上输入或拍摄助记词 / Never enter or photograph mnemonic on internet-connected device</li>
-                    <li>✅ 测试助记词仅用于演示，切勿用于真实资产 / Test mnemonics are for demo only, never use for real assets</li>
-                    <li>✅ 验证下载文件的 SHA256 哈希和 GPG 签名 / Verify SHA256 hash and GPG signature of downloaded files</li>
-                    <li>⛔ 本工具不会向任何服务器发送数据 / This tool sends no data to any server</li>
-                    <li>⛔ 不会自动复制到剪贴板 / No automatic clipboard copying</li>
+                    <li>✅ 请在完全离线的环境中生成助记词 / Generate in completely offline environment</li>
+                    <li>✅ 妥善保管助记词，抄写在纸上并存放在安全的地方 / Store safely, write on paper</li>
+                    <li>✅ 永远不要在联网设备上输入或拍摄助记词 / Never enter or photograph on internet-connected device</li>
+                    <li>✅ 测试助记词仅用于演示，切勿用于真实资产 / Test mnemonics for demo only</li>
+                    <li>⛔ 本工具不会向任何服务器发送数据 / No data sent to any server</li>
+                    <li>⛔ 不会自动复制到剪贴板，需手动操作 / No automatic clipboard copying</li>
                 </ul>
+            </section>
+
+            <!-- 测试向量 -->
+            <section class="test-vectors">
+                <h3>测试向量 / Test Vectors</h3>
+                <details>
+                    <summary>查看 BIP39 已知测试向量 / View BIP39 Test Vectors</summary>
+                    <div class="test-vector-content">
+                        <pre>测试向量 #1 / Test Vector #1:
+助记词 / Mnemonic:
+abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about
+
+预期种子 / Expected Seed (empty passphrase):
+5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4
+
+================================================================================
+
+测试向量 #2 / Test Vector #2:
+助记词 / Mnemonic:
+legal winner thank year wave sausage worth useful legal winner thank yellow
+
+预期种子 / Expected Seed (empty passphrase):
+878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096
+
+================================================================================
+
+测试向量 #3 / Test Vector #3:
+助记词 / Mnemonic:
+letter advice cage absurd amount doctor acoustic avoid letter advice cage above
+
+预期种子 / Expected Seed (empty passphrase):
+5b56c417303faa3fcba7e57400e120a0ca83ec5a4fc9ffba757fbe63fbd77a89a1a3be4c67196f57c39a88b76373733891bfaba16ed27a813ceed498804c0570
+</pre>
+                    </div>
+                </details>
             </section>
         </main>
 
         <footer>
-            <p>版本 / Version: 1.0.0 | 构建哈希 / Build Hash: <span id="buildHash">加载中...</span></p>
-            <p>开源项目 / Open Source Project | 可审计、可复现构建 / Auditable, Reproducible Build</p>
+            <p>🔓 开源项目 / Open Source Project | 可审计 / Auditable</p>
             <p>⚠️ 请审计源代码后使用 / Please audit source code before use</p>
         </footer>
     </div>
 
     <script src="crypto-utils.js"></script>
     <script src="bip39.js"></script>
-    <script src="bip32.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
