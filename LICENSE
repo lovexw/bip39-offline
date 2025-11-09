@@ -1,0 +1,49 @@
+MIT License
+
+Copyright (c) 2024 BIP39 Offline Generator Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+==============================================================================
+
+SECURITY NOTICE / 安全声明:
+
+This software is designed to generate cryptographic keys and mnemonics for
+managing cryptocurrency assets. The security of your assets depends on:
+
+1. Proper offline usage (air-gapped environment)
+2. Secure storage of generated mnemonics
+3. Code audit before use
+4. Following security best practices
+
+本软件用于生成管理加密货币资产的密钥和助记词。您的资产安全取决于：
+
+1. 正确的离线使用（air-gapped 环境）
+2. 生成的助记词的安全存储
+3. 使用前的代码审计
+4. 遵循安全最佳实践
+
+THE AUTHORS AND CONTRIBUTORS ARE NOT RESPONSIBLE FOR ANY LOSS OF ASSETS
+RESULTING FROM THE USE OF THIS SOFTWARE.
+
+作者和贡献者不对因使用本软件导致的任何资产损失负责。
+
+Always audit the code yourself before using it with real assets.
+
+在使用真实资产之前，请务必自行审计代码。
