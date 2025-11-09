@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIP39 Generator Tests</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .pass {
+            background-color: #1e5631;
+            border-left: 4px solid #4caf50;
+        }
+        .fail {
+            background-color: #5e1e1e;
+            border-left: 4px solid #f44336;
+        }
+        h1 {
+            color: #4ec9b0;
+        }
+        h2 {
+            color: #569cd6;
+            margin-top: 30px;
+        }
+        .summary {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #2d2d30;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+        pre {
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 BIP39 Generator Test Suite</h1>
+    <div id="testResults"></div>
+    <div class="summary" id="summary"></div>
+
+    <script src="crypto-utils.js"></script>
+    <script src="bip39.js"></script>
+    <script src="bip32.js"></script>
+    <script>
+        const TestRunner = (() => {
+            let passed = 0;
+            let failed = 0;
+            const results = [];
+
+            function assert(condition, message) {
+                if (condition) {
+                    passed++;
+                    results.push({ pass: true, message });
+                } else {
+                    failed++;
+                    results.push({ pass: false, message });
+                }
+            }
+
+            function assertEqual(actual, expected, message) {
+                const condition = actual === expected;
+                if (!condition) {
+                    message += `\n  Expected: ${expected}\n  Actual: ${actual}`;
+                }
+                assert(condition, message);
+            }
+
+            function displayResults() {
+                const container = document.getElementById('testResults');
+                results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = `test-result ${result.pass ? 'pass' : 'fail'}`;
+                    div.innerHTML = `
+                        <strong>${result.pass ? '✓ PASS' : '✗ FAIL'}:</strong>
+                        <pre>${result.message}</pre>
+                    `;
+                    container.appendChild(div);
+                });
+
+                const summary = document.getElementById('summary');
+                summary.innerHTML = `
+                    <strong>Test Summary:</strong><br>
+                    Total: ${passed + failed}<br>
+                    Passed: <span style="color: #4caf50">${passed}</span><br>
+                    Failed: <span style="color: #f44336">${failed}</span><br>
+                    Success Rate: ${((passed / (passed + failed)) * 100).toFixed(2)}%
+                `;
+            }
+
+            return {
+                assert,
+                assertEqual,
+                displayResults
+            };
+        })();
+
+        async function runTests() {
+            console.log('Starting BIP39 Generator Tests...');
+
+            await testCryptoUtils();
+            await testBIP39();
+            await testBIP32();
+            await testIntegration();
+
+            TestRunner.displayResults();
+        }
+
+        async function testCryptoUtils() {
+            console.log('Testing Crypto Utils...');
+
+            try {
+                const random = CryptoUtils.getSecureRandomBytes(32);
+                TestRunner.assert(random.length === 32, 'getSecureRandomBytes: Returns correct length');
+                TestRunner.assert(random instanceof Uint8Array, 'getSecureRandomBytes: Returns Uint8Array');
+            } catch (e) {
+                TestRunner.assert(false, 'getSecureRandomBytes: ' + e.message);
+            }
+
+            const hex = 'deadbeef';
+            const bytes = CryptoUtils.hexToBytes(hex);
+            TestRunner.assertEqual(bytes.length, 4, 'hexToBytes: Correct length');
+            TestRunner.assertEqual(bytes[0], 0xde, 'hexToBytes: First byte correct');
+            TestRunner.assertEqual(bytes[3], 0xef, 'hexToBytes: Last byte correct');
+
+            const hexBack = CryptoUtils.bytesToHex(bytes);
+            TestRunner.assertEqual(hexBack, hex, 'bytesToHex: Round trip conversion');
+
+            try {
+                const hash = await CryptoUtils.sha256('test');
+                TestRunner.assert(hash.length === 32, 'sha256: Returns 32 bytes');
+                TestRunner.assert(hash instanceof Uint8Array, 'sha256: Returns Uint8Array');
+            } catch (e) {
+                TestRunner.assert(false, 'sha256: ' + e.message);
+            }
+
+            try {
+                const hash = await CryptoUtils.sha512('test');
+                TestRunner.assert(hash.length === 64, 'sha512: Returns 64 bytes');
+            } catch (e) {
+                TestRunner.assert(false, 'sha512: ' + e.message);
+            }
+
+            try {
+                const hmac = await CryptoUtils.hmacSha512('key', 'data');
+                TestRunner.assert(hmac.length === 64, 'hmacSha512: Returns 64 bytes');
+            } catch (e) {
+                TestRunner.assert(false, 'hmacSha512: ' + e.message);
+            }
+        }
+
+        async function testBIP39() {
+            console.log('Testing BIP39...');
+
+            const testVectors = [
+                {
+                    entropy: '00000000000000000000000000000000',
+                    mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+                    seed: '5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4'
+                },
+                {
+                    entropy: '7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f',
+                    mnemonic: 'legal winner thank year wave sausage worth useful legal winner thank yellow',
+                    seed: '878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096'
+                },
+                {
+                    entropy: '80808080808080808080808080808080',
+                    mnemonic: 'letter advice cage absurd amount doctor acoustic avoid letter advice cage above',
+                    seed: '3972e432e99040f5cfb1227bbf1706d99112bb016d87f0b95c9f24e4fb8623c6e22f1e60cfd94e681d4f87641c6e64c62ea0774e05fba8ef0f34c8aea3e7d427'
+                }
+            ];
+
+            for (const [index, vector] of testVectors.entries()) {
+                try {
+                    const entropyBytes = CryptoUtils.hexToBytes(vector.entropy);
+                    const mnemonic = await BIP39.entropyToMnemonic(entropyBytes, 'english');
+                    
+                    TestRunner.assertEqual(
+                        mnemonic,
+                        vector.mnemonic,
+                        `BIP39 Test Vector #${index + 1}: Mnemonic generation`
+                    );
+
+                    const seed = await BIP39.mnemonicToSeed(mnemonic, '');
+                    const seedHex = CryptoUtils.bytesToHex(seed);
+                    
+                    TestRunner.assertEqual(
+                        seedHex,
+                        vector.seed,
+                        `BIP39 Test Vector #${index + 1}: Seed generation`
+                    );
+
+                    const isValid = BIP39.validateMnemonic(mnemonic, 'english');
+                    TestRunner.assert(isValid, `BIP39 Test Vector #${index + 1}: Mnemonic validation`);
+                } catch (e) {
+                    TestRunner.assert(false, `BIP39 Test Vector #${index + 1}: ${e.message}`);
+                }
+            }
+
+            try {
+                const mnemonic = await BIP39.generateMnemonic(128, 'english');
+                const words = mnemonic.split(' ');
+                TestRunner.assertEqual(words.length, 12, 'generateMnemonic: 12 words for 128-bit');
+                
+                const isValid = BIP39.validateMnemonic(mnemonic, 'english');
+                TestRunner.assert(isValid, 'generateMnemonic: Generated valid mnemonic');
+            } catch (e) {
+                TestRunner.assert(false, 'generateMnemonic: ' + e.message);
+            }
+
+            try {
+                const mnemonic = await BIP39.generateMnemonic(256, 'english');
+                const words = mnemonic.split(' ');
+                TestRunner.assertEqual(words.length, 24, 'generateMnemonic: 24 words for 256-bit');
+            } catch (e) {
+                TestRunner.assert(false, 'generateMnemonic 256-bit: ' + e.message);
+            }
+
+            TestRunner.assert(
+                BIP39.validateMnemonic('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'),
+                'validateMnemonic: Valid mnemonic passes'
+            );
+
+            TestRunner.assert(
+                !BIP39.validateMnemonic('invalid mnemonic words that do not exist'),
+                'validateMnemonic: Invalid mnemonic fails'
+            );
+
+            TestRunner.assert(
+                !BIP39.validateMnemonic('abandon abandon'),
+                'validateMnemonic: Too few words fails'
+            );
+        }
+
+        async function testBIP32() {
+            console.log('Testing BIP32...');
+
+            try {
+                const testSeed = CryptoUtils.hexToBytes(
+                    '000102030405060708090a0b0c0d0e0f'
+                );
+                
+                const hdkey = await BIP32.fromMasterSeed(testSeed);
+                
+                TestRunner.assert(hdkey !== null, 'BIP32: Created HDKey from seed');
+                TestRunner.assert(hdkey.chainCode !== null, 'BIP32: Chain code exists');
+                TestRunner.assert(hdkey.privateKey !== null, 'BIP32: Private key exists');
+                TestRunner.assert(hdkey.publicKey !== null, 'BIP32: Public key exists');
+                
+                TestRunner.assertEqual(hdkey.depth, 0, 'BIP32: Master key depth is 0');
+                TestRunner.assertEqual(hdkey.index, 0, 'BIP32: Master key index is 0');
+
+                try {
+                    const derived = await hdkey.derive("m/0'");
+                    TestRunner.assert(derived !== null, 'BIP32: Hardened derivation works');
+                    TestRunner.assertEqual(derived.depth, 1, 'BIP32: Derived key depth is 1');
+                } catch (e) {
+                    TestRunner.assert(false, 'BIP32 Hardened derivation: ' + e.message);
+                }
+
+                try {
+                    const derived = await hdkey.derive("m/0'/1");
+                    TestRunner.assert(derived !== null, 'BIP32: Multi-level derivation works');
+                    TestRunner.assertEqual(derived.depth, 2, 'BIP32: Multi-level depth is correct');
+                } catch (e) {
+                    TestRunner.assert(false, 'BIP32 Multi-level derivation: ' + e.message);
+                }
+
+                try {
+                    const xprv = hdkey.toBase58();
+                    TestRunner.assert(xprv.length > 100, 'BIP32: Base58 encoding produces output');
+                } catch (e) {
+                    TestRunner.assert(false, 'BIP32 Base58: ' + e.message);
+                }
+
+            } catch (e) {
+                TestRunner.assert(false, 'BIP32 general: ' + e.message);
+            }
+        }
+
+        async function testIntegration() {
+            console.log('Testing Integration...');
+
+            try {
+                const mnemonic = await BIP39.generateMnemonic(128, 'english');
+                const seed = await BIP39.mnemonicToSeed(mnemonic, '');
+                const hdkey = await BIP32.fromMasterSeed(seed);
+                
+                TestRunner.assert(true, 'Integration: Full flow (mnemonic -> seed -> HDKey) works');
+
+                try {
+                    const ethPath = await hdkey.derive("m/44'/60'/0'/0/0");
+                    TestRunner.assert(ethPath !== null, 'Integration: Ethereum path derivation works');
+                    
+                    const address = ethPath.getAddress();
+                    TestRunner.assert(address.startsWith('0x'), 'Integration: Address generation works');
+                } catch (e) {
+                    TestRunner.assert(false, 'Integration Ethereum path: ' + e.message);
+                }
+
+                try {
+                    const btcPath = await hdkey.derive("m/44'/0'/0'/0/0");
+                    TestRunner.assert(btcPath !== null, 'Integration: Bitcoin path derivation works');
+                } catch (e) {
+                    TestRunner.assert(false, 'Integration Bitcoin path: ' + e.message);
+                }
+
+                const passphrase = 'test passphrase';
+                const seedWithPass = await BIP39.mnemonicToSeed(mnemonic, passphrase);
+                TestRunner.assert(
+                    CryptoUtils.bytesToHex(seed) !== CryptoUtils.bytesToHex(seedWithPass),
+                    'Integration: Passphrase changes seed'
+                );
+
+            } catch (e) {
+                TestRunner.assert(false, 'Integration: ' + e.message);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runTests);
+        } else {
+            runTests();
+        }
+    </script>
+</body>
+</html>
